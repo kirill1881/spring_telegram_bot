@@ -1,8 +1,12 @@
 package com.example.spring_telegram_bot.bot;
 
 import com.example.spring_telegram_bot.Helper;
+import com.example.spring_telegram_bot.commands.ActualCommand;
+import com.example.spring_telegram_bot.commands.CommandWorker;
+import com.example.spring_telegram_bot.commands.MainCommand;
 import com.example.spring_telegram_bot.models.UserModel;
 import com.example.spring_telegram_bot.models.enums.StateEnum;
+import com.example.spring_telegram_bot.repos.OrderRepo;
 import com.example.spring_telegram_bot.repos.UserRpository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -14,7 +18,9 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 @Component
 public class Bot extends TelegramLongPollingBot {
@@ -22,6 +28,9 @@ public class Bot extends TelegramLongPollingBot {
 
     @Autowired
     UserRpository userRpository;
+
+    @Autowired
+    OrderRepo orderRepo;
 
     @Override
     public String getBotUsername() {
@@ -37,25 +46,15 @@ public class Bot extends TelegramLongPollingBot {
     public void onUpdateReceived(Update update) {
         SendMessage sendMessage = new SendMessage();
 
+        List<CommandWorker> list = new ArrayList<>();
+        list.add(new MainCommand(userRpository));
+        list.add(new ActualCommand(orderRepo, userRpository));
 
-        if (update.getMessage().getText().equals("/start")) {
-            sendMessage.setChatId(update.getMessage().getChatId());
-            sendMessage.setText("Hi, my dear manager");
-
-            UserModel userModel = new UserModel();
-            userModel.setName(update.getMessage().getFrom().getFirstName());
-            userModel.setStateEnum(StateEnum.START);
-            userModel.setTgId(update.getMessage().getFrom().getId().toString());
-
-            userRpository.save(userModel);
-            KeyboardRow keyboardRow = new KeyboardRow();
-            keyboardRow.add(new KeyboardButton("Посмотреть заявки"));
-            keyboardRow.add(new KeyboardButton("Просмотреть архив"));
-
-            ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
-            replyKeyboardMarkup.setKeyboard(Collections.singletonList(keyboardRow));
-
-            sendMessage.setReplyMarkup(replyKeyboardMarkup);
+        for (CommandWorker c: list){
+           sendMessage = c.execute(update);
+           if (sendMessage!=null){
+               break;
+           }
         }
         try {
             execute(sendMessage);

@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface UserRpository extends JpaRepository<UserModel, Long> {
+    UserModel findByTgId(String tgId);
 }
