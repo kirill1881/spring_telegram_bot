@@ -30,44 +30,62 @@ public class ActualCommand implements CommandWorker {
 
     @Override
     public SendMessage execute(Update update) {
-        if (!update.getMessage().getText().equals("Посмотреть заявки")){
-            return null;
+        if (update.hasMessage()) {
+            if (!update.getMessage().getText().equals("Посмотреть заявки")) {
+                return null;
+            }
         }
-        UserModel userModel = userRpository.findByTgId(update
-                .getMessage().getFrom().getId().toString());
-        userModel.setStateEnum(StateEnum.ACTUAL_ORDERS);
-        userRpository.save(userModel);
-
         SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(update.getMessage().getChatId());
-
-        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
-
-        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
-
-        InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
-        inlineKeyboardButton.setText("Не актуально");
-        inlineKeyboardButton.setCallbackData("not actual");
-
-        inlineKeyboardMarkup.setKeyboard(Collections.singletonList
-                (Collections.singletonList(inlineKeyboardButton)));
-
-        KeyboardRow keyboardRow = new KeyboardRow();
-        keyboardRow.add(new KeyboardButton("Еще"));
-        keyboardRow.add(new KeyboardButton("Главная"));
-        replyKeyboardMarkup.
-                setKeyboard(Collections.singletonList(keyboardRow));
-        sendMessage.setReplyMarkup(replyKeyboardMarkup);
-
-        sendMessage.setReplyMarkup(inlineKeyboardMarkup);
 
 
-        List<OrderModel> list = orderRepo.findAllByIfAnswered(false);
-        StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append(list.get(0).getCarName()+"\n");
-        stringBuilder.append(list.get(0).getContact()+" "+list.get(0).getName());
+        if (!update.hasCallbackQuery()) {
+            sendMessage.setChatId(update.getMessage().getFrom().getId());
+            UserModel userModel = userRpository.findByTgId(update
+                    .getMessage().getFrom().getId().toString());
+            userModel.setStateEnum(StateEnum.ACTUAL_ORDERS);
+            userRpository.save(userModel);
 
-        sendMessage.setText(stringBuilder.toString());
-        return sendMessage;
+            ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+
+            InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+
+            InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
+            inlineKeyboardButton.setText("Не актуально");
+            inlineKeyboardButton.setCallbackData("not actual");
+
+            inlineKeyboardMarkup.setKeyboard(Collections.singletonList
+                    (Collections.singletonList(inlineKeyboardButton)));
+
+            KeyboardRow keyboardRow = new KeyboardRow();
+            keyboardRow.add(new KeyboardButton("Еще"));
+            keyboardRow.add(new KeyboardButton("Главная"));
+            replyKeyboardMarkup.
+                    setKeyboard(Collections.singletonList(keyboardRow));
+            sendMessage.setReplyMarkup(replyKeyboardMarkup);
+
+            sendMessage.setReplyMarkup(inlineKeyboardMarkup);
+
+
+            List<OrderModel> list = orderRepo.findAllByIfAnswered(false);
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append(list.get(0).getCarName() + "\n");
+            stringBuilder.append(list.get(0).getContact() + " " + list.get(0).getName());
+
+            sendMessage.setText(stringBuilder.toString());
+            return sendMessage;
+        }else {
+            sendMessage.setChatId(update.getCallbackQuery().getFrom().getId());
+            List<OrderModel> list = orderRepo.findAllByIfAnswered(false);
+            OrderModel orderModel = list.get(0);
+            orderModel.setIfAnswered(true);
+            orderRepo.save(orderModel);
+            StringBuilder stringBuilder = new StringBuilder();
+            stringBuilder.append(list.get(1).getCarName() + "\n");
+            stringBuilder.append(list.get(1).getContact() + " " + list.get(0).getName());
+
+            sendMessage.setText(stringBuilder.toString());
+            return sendMessage;
+
+        }
     }
 }

@@ -52,11 +52,15 @@ public class Bot extends TelegramLongPollingBot {
         list.add(new ActualCommand(orderRepo, userRpository));
         list.add(new ArchiveCommand(orderRepo));
 
+        if (update.hasMessage()){
         for (CommandWorker c: list){
            sendMessage = c.execute(update);
            if (sendMessage!=null){
                break;
            }
+        }}else {
+            CommandWorker commandWorker = list.get(1);
+            sendMessage = commandWorker.execute(update);
         }
         try {
             execute(sendMessage);

@@ -22,4 +22,7 @@ public class UserModel {
     @Enumerated
     @Column(name = "state")
     StateEnum stateEnum;
+
+    @Column(name = "chat_id")
+    String chatId;
 }

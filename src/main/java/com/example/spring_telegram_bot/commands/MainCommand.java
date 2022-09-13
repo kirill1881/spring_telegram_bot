@@ -40,7 +40,7 @@ public class MainCommand implements CommandWorker {
             userModel.setName(update.getMessage().getFrom().getFirstName());
             userModel.setStateEnum(StateEnum.START);
             userModel.setTgId(update.getMessage().getFrom().getId().toString());
-
+            userModel.setChatId(update.getMessage().getChatId().toString());
             userRpository.save(userModel);
         }
 
