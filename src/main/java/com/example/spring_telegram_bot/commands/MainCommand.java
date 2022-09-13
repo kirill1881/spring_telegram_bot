@@ -26,19 +26,24 @@ public class MainCommand implements CommandWorker {
 
     @Override
     public SendMessage execute(Update update) {
-        if (!update.getMessage().getText().equals("/start")){
+        if (!update.getMessage().getText().equals("/start")&&
+        !update.getMessage().getText().equals("Главная")){
             return null;
         }
         SendMessage sendMessage = new SendMessage();
         sendMessage.setChatId(update.getMessage().getChatId());
         sendMessage.setText("Hi, my dear manager");
 
-        UserModel userModel = new UserModel();
-        userModel.setName(update.getMessage().getFrom().getFirstName());
-        userModel.setStateEnum(StateEnum.START);
-        userModel.setTgId(update.getMessage().getFrom().getId().toString());
+        if (userRpository.findByTgId(update.getMessage().getFrom()
+                .getId().toString())==null) {
+            UserModel userModel = new UserModel();
+            userModel.setName(update.getMessage().getFrom().getFirstName());
+            userModel.setStateEnum(StateEnum.START);
+            userModel.setTgId(update.getMessage().getFrom().getId().toString());
 
-        userRpository.save(userModel);
+            userRpository.save(userModel);
+        }
+
         KeyboardRow keyboardRow = new KeyboardRow();
         keyboardRow.add(new KeyboardButton("Посмотреть заявки"));
         keyboardRow.add(new KeyboardButton("Просмотреть архив"));

@@ -2,6 +2,7 @@ package com.example.spring_telegram_bot.bot;
 
 import com.example.spring_telegram_bot.Helper;
 import com.example.spring_telegram_bot.commands.ActualCommand;
+import com.example.spring_telegram_bot.commands.ArchiveCommand;
 import com.example.spring_telegram_bot.commands.CommandWorker;
 import com.example.spring_telegram_bot.commands.MainCommand;
 import com.example.spring_telegram_bot.models.UserModel;
@@ -49,6 +50,7 @@ public class Bot extends TelegramLongPollingBot {
         List<CommandWorker> list = new ArrayList<>();
         list.add(new MainCommand(userRpository));
         list.add(new ActualCommand(orderRepo, userRpository));
+        list.add(new ArchiveCommand(orderRepo));
 
         for (CommandWorker c: list){
            sendMessage = c.execute(update);

@@ -8,7 +8,9 @@ import com.example.spring_telegram_bot.repos.UserRpository;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 
@@ -41,12 +43,24 @@ public class ActualCommand implements CommandWorker {
 
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
 
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+
+        InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
+        inlineKeyboardButton.setText("Не актуально");
+        inlineKeyboardButton.setCallbackData("not actual");
+
+        inlineKeyboardMarkup.setKeyboard(Collections.singletonList
+                (Collections.singletonList(inlineKeyboardButton)));
+
         KeyboardRow keyboardRow = new KeyboardRow();
         keyboardRow.add(new KeyboardButton("Еще"));
         keyboardRow.add(new KeyboardButton("Главная"));
         replyKeyboardMarkup.
                 setKeyboard(Collections.singletonList(keyboardRow));
         sendMessage.setReplyMarkup(replyKeyboardMarkup);
+
+        sendMessage.setReplyMarkup(inlineKeyboardMarkup);
+
 
         List<OrderModel> list = orderRepo.findAllByIfAnswered(false);
         StringBuilder stringBuilder = new StringBuilder();
